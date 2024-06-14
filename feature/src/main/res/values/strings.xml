@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">feature</string>
+    <string name="back">Back</string>
+    <string name="users_details">Users Details</string>
+</resources>
