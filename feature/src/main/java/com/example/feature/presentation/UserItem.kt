@@ -19,19 +19,6 @@ import com.example.feature.domain.entity.UsersEntity
 
 @Composable
 fun UserItem(usersEntity: UsersEntity) {
-   /* Row(modifier= Modifier
-        .fillMaxWidth()
-        .wrapContentHeight(),verticalAlignment = Alignment.CenterVertically,horizontalArrangement = Arrangement.Center){
-        Card(elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        modifier = Modifier
-            .padding(15.dp)
-            .wrapContentHeight()
-            .fillMaxWidth(0.8f)) {
-            Column() {
-
-            }
-        }
-    }*/
     Card(
         modifier = Modifier
             .padding(8.dp)

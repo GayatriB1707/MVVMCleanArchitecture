@@ -19,6 +19,7 @@ android {
     testOptions {
         unitTests.all {
             useJUnitPlatform()
+            unitTests.returnDefaultValues = true
         }
     }
 
@@ -95,10 +96,15 @@ dependencies {
 
     // Coroutine Test
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
+
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.30.1'
 
 
     testImplementation("app.cash.turbine:turbine:1.0.0")
 
     implementation("com.squareup:javapoet:1.13.0")
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit:1.5.21'
+    testImplementation 'io.mockk:mockk:1.12.0'
+
 }

@@ -1,65 +1,66 @@
 package com.example.feature
 
-import com.example.core.ui.common.Resource
+import app.cash.turbine.test
+import assertk.assertThat
 import com.example.feature.domain.entity.UsersEntity
-import com.example.feature.domain.use_cases.UsersUseCases
 import com.example.feature.presentation.UsersViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
+import org.mockito.InjectMocks
+import org.mockito.Mock
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
+import assertk.assertions.isEqualTo
+import com.example.core.ui.common.Resource
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import org.mockito.Mockito.doReturn
 
 @ExperimentalCoroutinesApi
 class UsersViewModelTest {
-    @get:Rule
-    val mainCoroutineRule = MainCoroutineRule()
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
 
-    private val usersUseCases: UsersUseCases = mock()
-    private lateinit var usersViewModel: UsersViewModel
-    private val usersList: List<UsersEntity>? = mock()
+    @Mock
+    lateinit var usersUseCases: UsersUseCasesTest
+
+    @InjectMocks
+    lateinit var userViewModel: UsersViewModel
 
     @BeforeEach
     fun setup() {
-        usersViewModel = UsersViewModel(usersUseCases)
-    }
-
-    @ExperimentalCoroutinesApi
-    @Test
-    fun validateProgressBar() = runTest {
-        `when`(usersUseCases.invoke()).thenReturn(
-            flow {
-                emit(Resource.Loading())
-            }
-        )
-        mainCoroutineRule.testDispatcher.scheduler.advanceUntilIdle()
-        Assert.assertEquals(true, usersViewModel.usersState.value.isLoading)
+        MockitoAnnotations.openMocks(this)
     }
 
     @Test
-    fun validateSuccessState() = runTest {
-        `when`(usersUseCases.invoke()).thenReturn(
-            flow {
-                emit(Resource.Success(usersList))
-            }
-        )
-        mainCoroutineRule.testDispatcher.scheduler.advanceUntilIdle()
-        Assert.assertEquals(usersList, usersViewModel.usersState.value.data)
+    fun `test loading users success`() = testScope.runTest {
+        val mockUsers = listOf(UsersEntity(1, "1", "", ""))
+        `when`(usersUseCases.invoke()).thenReturn(flowOf(Resource.Success(mockUsers)))
+        userViewModel.allUsers.test {
+            assertThat(awaitItem().data?.size).isEqualTo(1)
+            awaitComplete()
+        }
     }
 
     @Test
-    fun throwErrorInErrorCase() = runTest {
-        `when`(usersUseCases.invoke()).thenReturn(
-            flow {
-                emit(Resource.Error("Something Went Wrong"))
-            }
-        )
-        mainCoroutineRule.testDispatcher.scheduler.advanceUntilIdle()
-        Assert.assertEquals("Something Went Wrong", usersViewModel.usersState.value.error)
+    fun `test loading users failure`() = testScope.runTest {
+        val errorMessage = "Error Message"
+        doReturn(flow<List<UsersEntity>> {
+            throw IllegalStateException(errorMessage)
+        }).`when`(usersUseCases).invoke()
+        userViewModel.allUsers.test {
+            assertTrue(awaitError() is IllegalStateException)
+            assertEquals(
+                errorMessage,
+                awaitError().message
+            )
+        }
     }
 }
+
