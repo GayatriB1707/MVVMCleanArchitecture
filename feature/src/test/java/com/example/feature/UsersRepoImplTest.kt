@@ -1,10 +1,7 @@
 package com.example.feature
 
-
 import com.example.core.ui.common.Resource
-import com.example.feature.data.remote.service.UsersApiService
 import com.example.feature.domain.entity.UsersEntity
-import com.example.feature.domain.mapper.toUserssEntities
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.example.feature.domain.repo.UsersRepository
 import kotlinx.coroutines.Dispatchers
@@ -13,14 +10,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class UsersRepoImplTest(val fakeApi: UsersApiService) : UsersRepository {
+class UsersRepoImplTest : UsersRepository {
+    val usersApiResponse1 = UsersEntity(
+        userID = 1, userName = "abc", userUserName = "test", userEmail = "abc@gmail.com"
+    )
+    val usersApiResponse2 = UsersEntity(
+        userID = 1, userName = "xyz", userUserName = "test", userEmail = "abc@gmail.com"
+    )
+    val users: List<UsersEntity> = listOf(usersApiResponse1, usersApiResponse2)
     override suspend fun getAllUsers(): Flow<Resource<List<UsersEntity>>> {
         return flow {
-            try {
-                emit(Resource.Success(fakeApi.getAllUsers().toUserssEntities()))
-            } catch (e: Exception) {
-                emit(Resource.Error(message = e.message))
-            }
+            emit(Resource.Success(users))
         }.flowOn(Dispatchers.IO)
     }
 }

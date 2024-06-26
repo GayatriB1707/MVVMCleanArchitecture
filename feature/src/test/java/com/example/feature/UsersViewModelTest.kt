@@ -5,30 +5,26 @@ import assertk.assertThat
 import com.example.feature.domain.entity.UsersEntity
 import com.example.feature.presentation.UsersViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.InjectMocks
-import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import assertk.assertions.isEqualTo
 import com.example.core.ui.common.Resource
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
+import com.example.feature.domain.use_cases.UsersUseCases
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import org.mockito.Mockito.doReturn
+import org.mockito.Mockito.mock
 
 @ExperimentalCoroutinesApi
 class UsersViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
-    @Mock
-    lateinit var usersUseCases: UsersUseCasesTest
+    var usersUseCases: UsersUseCases = mock()
 
     @InjectMocks
     lateinit var userViewModel: UsersViewModel
@@ -36,6 +32,7 @@ class UsersViewModelTest {
     @BeforeEach
     fun setup() {
         MockitoAnnotations.openMocks(this)
+        userViewModel = UsersViewModel(usersUseCases)
     }
 
     @Test
@@ -43,6 +40,7 @@ class UsersViewModelTest {
         val mockUsers = listOf(UsersEntity(1, "1", "", ""))
         `when`(usersUseCases.invoke()).thenReturn(flowOf(Resource.Success(mockUsers)))
         userViewModel.allUsers.test {
+            userViewModel.allUsers
             assertThat(awaitItem().data?.size).isEqualTo(1)
             awaitComplete()
         }
@@ -51,16 +49,11 @@ class UsersViewModelTest {
     @Test
     fun `test loading users failure`() = testScope.runTest {
         val errorMessage = "Error Message"
-        doReturn(flow<List<UsersEntity>> {
-            throw IllegalStateException(errorMessage)
-        }).`when`(usersUseCases).invoke()
+        `when`(usersUseCases.invoke()).thenReturn(flowOf(Resource.Error(message = errorMessage)))
         userViewModel.allUsers.test {
-            assertTrue(awaitError() is IllegalStateException)
-            assertEquals(
-                errorMessage,
-                awaitError().message
-            )
+            userViewModel.allUsers
+            assertThat(awaitItem().error).isEqualTo(errorMessage)
+            awaitComplete()
         }
     }
 }
-

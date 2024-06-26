@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UsersViewModel @Inject constructor(private val getAllUsersUseCases: UsersUseCases) :
-    CoreViewModel() {
+    BaseViewModel() {
 
     val allUsers = executeApi { getAllUsersUseCases.invoke() }.map {
         when (it) {

@@ -48,17 +48,16 @@ fun UsersScreen(usersViewModel: UsersViewModel = hiltViewModel()) {
             ).value
             if (result.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(modifier = Modifier.testTag("progress"))
+                    CircularProgressIndicator(modifier = Modifier.testTag(stringResource(R.string.progress)))
                 }
             }
             if (result.data != null) {
-                LazyColumn(modifier = Modifier.testTag("Users Details")) {
+                LazyColumn(modifier = Modifier.testTag(stringResource(id = R.string.users_details))) {
                     items(result.data) {
                         UserItem(it)
                     }
                 }
             }
         }
-
     }
 }
